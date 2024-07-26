@@ -1,4 +1,75 @@
 basePath: /
+definitions:
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  models.Reservation:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      end_date:
+        type: string
+      id:
+        type: integer
+      room_id:
+        type: integer
+      start_date:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.Room:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      number:
+        type: string
+      price:
+        type: number
+      status:
+        description: '"available", "occupied", "cleaning"'
+        type: string
+      type:
+        description: '"single", "double", "suite"'
+        type: string
+      updateAt:
+        type: string
+    type: object
+  models.User:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      id:
+        type: integer
+      password:
+        type: string
+      role:
+        description: '"admin", "receptionist", "customer"'
+        type: string
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -13,6 +84,29 @@ info:
   title: Hotel Management System API
   version: "1.0"
 paths:
+  /customers:
+    get:
+      description: Get a list of all users with the role of customer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+        "404":
+          description: Customers not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get all customers
+      tags:
+      - User
   /login:
     post:
       consumes:
@@ -51,11 +145,13 @@ paths:
           schema:
             type: string
       summary: Login a user
+      tags:
+      - User
   /register:
     post:
       consumes:
       - application/json
-      description: Register a new user with username, password, and email
+      description: Register a new user with username, password, email and role
       parameters:
       - description: Username
         in: body
@@ -75,6 +171,12 @@ paths:
         required: true
         schema:
           type: string
+      - description: Role
+        in: body
+        name: role
+        required: true
+        schema:
+          type: string
       produces:
       - application/json
       responses:
@@ -91,7 +193,172 @@ paths:
           schema:
             type: string
       summary: Register a new user
+      tags:
+      - User
+  /reservations:
+    get:
+      description: Get a list of all reservations
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Reservation'
+            type: array
+        "404":
+          description: Reservations not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get all reservations
+      tags:
+      - Reservation
+    post:
+      consumes:
+      - application/json
+      description: Create a new reservation for a room
+      parameters:
+      - description: Reservation data
+        in: body
+        name: reservation
+        required: true
+        schema:
+          $ref: '#/definitions/models.Reservation'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Reservation'
+        "400":
+          description: Invalid input
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Create a new reservation
+      tags:
+      - Reservation
+  /reservations/{reservation_id}:
+    delete:
+      description: Delete a reservation by ID
+      parameters:
+      - description: Reservation ID
+        in: path
+        name: reservation_id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "404":
+          description: Reservation not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Delete a reservation
+      tags:
+      - Reservation
+    get:
+      description: Get details of a specific reservation
+      parameters:
+      - description: Reservation ID
+        in: path
+        name: reservation_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Reservation'
+        "400":
+          description: Invalid reservation ID
+          schema:
+            type: string
+        "404":
+          description: Reservation not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get reservation details
+      tags:
+      - Reservation
+    put:
+      consumes:
+      - application/json
+      description: Update an existing reservation
+      parameters:
+      - description: Reservation ID
+        in: path
+        name: reservation_id
+        required: true
+        type: integer
+      - description: Updated reservation data
+        in: body
+        name: reservation
+        required: true
+        schema:
+          $ref: '#/definitions/models.Reservation'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Reservation'
+        "400":
+          description: Invalid input
+          schema:
+            type: string
+        "404":
+          description: Reservation not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Update an existing reservation
+      tags:
+      - Reservation
   /rooms:
+    get:
+      description: Get a list of all rooms
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Room'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get all rooms
+      tags:
+      - Room
     post:
       consumes:
       - application/json
@@ -137,6 +404,8 @@ paths:
           schema:
             type: string
       summary: Create a new room
+      tags:
+      - Room
   /rooms/{room_id}:
     delete:
       description: Delete a room by ID
@@ -160,6 +429,34 @@ paths:
           schema:
             type: string
       summary: Delete a room
+      tags:
+      - Room
+    get:
+      description: Get details of a specific room
+      parameters:
+      - description: Room ID
+        in: path
+        name: room_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Room'
+        "400":
+          description: Invalid room ID
+          schema:
+            type: string
+        "404":
+          description: Room not found
+          schema:
+            type: string
+      summary: Get room details
+      tags:
+      - Room
     put:
       consumes:
       - application/json
@@ -214,4 +511,126 @@ paths:
           schema:
             type: string
       summary: Update an existing room
+      tags:
+      - Room
+  /users:
+    get:
+      description: Get a list of all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.User'
+            type: array
+        "404":
+          description: Users not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get all users
+      tags:
+      - User
+  /users/{user_id}:
+    delete:
+      description: Delete a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Invalid user id
+          schema:
+            type: string
+        "404":
+          description: User not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Delete a user
+      tags:
+      - User
+    get:
+      description: Get details of a specific user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Invalid user id
+          schema:
+            type: string
+        "404":
+          description: User not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get user details
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: Update details of a specific user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: Updated user data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Invalid user id
+          schema:
+            type: string
+        "404":
+          description: User not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Update a user
+      tags:
+      - User
 swagger: "2.0"

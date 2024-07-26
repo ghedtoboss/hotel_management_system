@@ -17,12 +17,14 @@ var jwtKey = []byte(os.Getenv("JWT_KEY"))
 
 // RegisterHandler godoc
 // @Summary Register a new user
-// @Description Register a new user with username, password, and email
+// @Description Register a new user with username, password, email and role
+// @Tags User
 // @Accept  json
 // @Produce  json
 // @Param   username  body string  true  "Username"
 // @Param   password  body string  true  "Password"
 // @Param   email     body string  true  "Email"
+// @Param	role	  body string  true  "Role"
 // @Success 201 {string} string "User registered successfully"
 // @Failure 400 {string} string "Invalid input"
 // @Failure 500 {string} string "Internal server error"
@@ -64,6 +66,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 // LoginHandler godoc
 // @Summary Login a user
 // @Description Login a user with username and password
+// @Tags User
 // @Accept  json
 // @Produce  json
 // @Param   username  body string  true  "Username"
