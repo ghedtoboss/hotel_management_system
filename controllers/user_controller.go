@@ -175,3 +175,116 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(users)
 }
+
+// GetProfile godoc
+// @Summary Get user profile
+// @Description Get the profile information of the currently logged-in user
+// @Tags Profile
+// @Produce  json
+// @Success 200 {object} models.User
+// @Failure 401 {string} string "Unauthorized"
+// @Router /profile [get]
+func GetProfile(w http.ResponseWriter, r *http.Request) {
+	claims := r.Context().Value("user").(*models.Claims)
+
+	var user models.User
+	if result := database.DB.First(&user, claims.UserID); result.Error != nil {
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(user)
+}
+
+// UpdateProfile godoc
+// @Summary Update user profile
+// @Description Update the profile information of the currently logged-in user
+// @Tags Profile
+// @Accept  json
+// @Produce  json
+// @Param   user  body models.User  true  "Updated user data"
+// @Success 200 {object} models.User
+// @Failure 400 {string} string "Invalid input"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal server error"
+// @Router /profile [put]
+func UpdateProfile(w http.ResponseWriter, r *http.Request) {
+	claims := r.Context().Value("user").(*models.Claims)
+	var user models.User
+	if result := database.DB.First(&user, claims.UserID); result.Error != nil {
+		http.Error(w, "User not found.", http.StatusNotFound)
+		return
+	}
+
+	var input models.User
+	err := json.NewDecoder(r.Body).Decode(&input)
+	if err != nil {
+		http.Error(w, "Invalid input.", http.StatusBadRequest)
+		return
+	}
+
+	user.Email = input.Email
+	user.Username = input.Username
+	user.UpdatedAt = time.Now()
+
+	if result := database.DB.Save(&user); result != nil {
+		http.Error(w, "Failed to update profile.", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(user)
+}
+
+// UpdatePassword godoc
+// @Summary Update user password
+// @Description Update the password of the currently logged-in user
+// @Tags Profile
+// @Accept  json
+// @Produce  json
+// @Param   password_data  body map[string]string  true  "Old and new passwords"
+// @Success 200 {string} string "Password updated successfully"
+// @Failure 400 {string} string "Invalid input"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal server error"
+// @Router /profile/password [put]
+func UpdatePassword(w http.ResponseWriter, r *http.Request) {
+	claims := r.Context().Value("user").(*models.Claims)
+	var user models.User
+	if result := database.DB.First(&user, claims.UserID); result.Error != nil {
+		http.Error(w, "User not found.", http.StatusNotFound)
+		return
+	}
+
+	var passwordData map[string]string
+	err := json.NewDecoder(r.Body).Decode(&passwordData)
+	if err != nil {
+		http.Error(w, "Invalid input.", http.StatusBadRequest)
+		return
+	}
+
+	oldPassword := passwordData["old_password"]
+	newPassword := passwordData["new_password"]
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword)); err != nil {
+		http.Error(w, "Old password is incorrect.", http.StatusUnauthorized)
+		return
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		http.Error(w, "Failed to hash password.", http.StatusInternalServerError)
+		return
+	}
+
+	user.Password = string(hashedPassword)
+	user.UpdatedAt = time.Now()
+
+	if result := database.DB.Save(&user); result.Error != nil {
+		http.Error(w, "Failed to update password.", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Password updated successfully."})
+}

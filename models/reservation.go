@@ -12,7 +12,7 @@ type Reservation struct {
 	RoomID    uint           `json:"room_id"`
 	StartDate time.Time      `json:"start_date"`
 	EndDate   time.Time      `json:"end_date"`
-	Status    string         `json:"status"`
+	Status    string         `json:"status"` //pending, confirmed, checked-in, checked-out, cancelled, no-show
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`

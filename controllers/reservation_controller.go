@@ -219,3 +219,65 @@ func GetReservationDetails(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(reservation)
 }
+
+// UpdateReservationStatus godoc
+// @Summary Update reservation status
+// @Description Update the status of a reservation
+// @Tags Reservation
+// @Accept  json
+// @Produce  json
+// @Param   reservation_id  path int  true  "Reservation ID"
+// @Param   status  body string  true  "New status"
+// @Success 200 {object} models.Reservation
+// @Failure 400 {string} string "Invalid input"
+// @Failure 404 {string} string "Reservation not found"
+// @Failure 500 {string} string "Internal server error"
+// @Router /reservations/{reservation_id}/status [put]
+func UpdateReservationStatus(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	reservID, err := strconv.Atoi(params["reservation_id"])
+	if err != nil {
+		http.Error(w, "Invalid reservation id", http.StatusBadRequest)
+		return
+	}
+
+	var input struct {
+		Status string `json:"status"`
+	}
+	err = json.NewDecoder(r.Body).Decode(&input)
+	if err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	var reservation models.Reservation
+	if result := database.DB.First(&reservation, reservID); result.Error != nil {
+		http.Error(w, "Reservation not found", http.StatusNotFound)
+		return
+	}
+
+	validStatuses := []string{"pending", "confirmed", "checked-in", "checked-out", "cancelled", "no-show"}
+	isValidStatus := false
+	for _, status := range validStatuses {
+		if input.Status == status {
+			isValidStatus = true
+			break
+		}
+	}
+
+	if !isValidStatus {
+		http.Error(w, "Invalid status value", http.StatusBadRequest)
+		return
+	}
+
+	reservation.Status = input.Status
+	reservation.UpdatedAt = time.Now()
+
+	if result := database.DB.Save(&reservation); result.Error != nil {
+		http.Error(w, "Failed to update reservation", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(reservation)
+}

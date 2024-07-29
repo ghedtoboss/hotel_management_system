@@ -14,6 +14,15 @@ func InitRouter() *mux.Router {
 
 	r.HandleFunc("/register", controllers.RegisterHandler).Methods("POST")
 	r.HandleFunc("/login", controllers.LoginHandler).Methods("POST")
+	r.Handle("/customers", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.GetCustomers)))).Methods("GET")
+	r.Handle("/users/{user_id}", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.GetUser)))).Methods("GET")
+	r.Handle("/users/{user_id}", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.UpdateUser)))).Methods("PUT")
+	r.Handle("/users/{user_id}", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.DeleteUser)))).Methods("DELETE")
+	r.Handle("/users", middleware.JWTAuth(middleware.Authorize("admin")(http.HandlerFunc(controllers.GetAllUsers)))).Methods("GET")
+	r.Handle("/profile", middleware.JWTAuth(http.HandlerFunc(controllers.GetProfile))).Methods("GET")
+	r.Handle("/profile", middleware.JWTAuth(http.HandlerFunc(controllers.UpdateProfile))).Methods("PUT")
+	r.Handle("/profile/password", middleware.JWTAuth(http.HandlerFunc(controllers.UpdatePassword))).Methods("PUT")
+
 	r.Handle("/rooms", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.CreateRoom)))).Methods("POST")
 	r.Handle("/rooms/{room_id}", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.UpdateRoom)))).Methods("PUT")
 	r.Handle("/rooms/{room_id}", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.DeleteRoom)))).Methods("DELETE")
@@ -25,12 +34,7 @@ func InitRouter() *mux.Router {
 	r.Handle("/reservations/{reservation_id}", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.DeleteReservation)))).Methods("DELETE")
 	r.Handle("/reservations", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.GetReservations)))).Methods("GET")
 	r.Handle("/reservations/{reservation_id}", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.GetReservationDetails)))).Methods("GET")
-
-	r.Handle("/customers", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.GetCustomers)))).Methods("GET")
-	r.Handle("/users/{user_id}", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.GetUser)))).Methods("GET")
-	r.Handle("/users/{user_id}", middleware.JWTAuth(http.HandlerFunc(controllers.UpdateUser))).Methods("PUT")
-	r.Handle("/users/{user_id}", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.DeleteUser)))).Methods("DELETE")
-	r.Handle("/users", middleware.JWTAuth(middleware.Authorize("admin")(http.HandlerFunc(controllers.GetAllUsers)))).Methods("GET")
+	r.Handle("/reservations/status/{reservation_id}", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.UpdateReservationStatus)))).Methods("PUT")
 
 	// Swagger endpoint
 	r.PathPrefix("/swagger/").Handler(httpSwagger.Handler(

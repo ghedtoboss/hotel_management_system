@@ -23,6 +23,7 @@ definitions:
       start_date:
         type: string
       status:
+        description: pending, confirmed, checked-in, checked-out, cancelled, no-show
         type: string
       updated_at:
         type: string
@@ -147,6 +148,92 @@ paths:
       summary: Login a user
       tags:
       - User
+  /profile:
+    get:
+      description: Get the profile information of the currently logged-in user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      summary: Get user profile
+      tags:
+      - Profile
+    put:
+      consumes:
+      - application/json
+      description: Update the profile information of the currently logged-in user
+      parameters:
+      - description: Updated user data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/models.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "400":
+          description: Invalid input
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Update user profile
+      tags:
+      - Profile
+  /profile/password:
+    put:
+      consumes:
+      - application/json
+      description: Update the password of the currently logged-in user
+      parameters:
+      - description: Old and new passwords
+        in: body
+        name: password_data
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password updated successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid input
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Update user password
+      tags:
+      - Profile
   /register:
     post:
       consumes:
@@ -338,6 +425,45 @@ paths:
           schema:
             type: string
       summary: Update an existing reservation
+      tags:
+      - Reservation
+  /reservations/{reservation_id}/status:
+    put:
+      consumes:
+      - application/json
+      description: Update the status of a reservation
+      parameters:
+      - description: Reservation ID
+        in: path
+        name: reservation_id
+        required: true
+        type: integer
+      - description: New status
+        in: body
+        name: status
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Reservation'
+        "400":
+          description: Invalid input
+          schema:
+            type: string
+        "404":
+          description: Reservation not found
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Update reservation status
       tags:
       - Reservation
   /rooms:
