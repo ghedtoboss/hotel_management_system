@@ -120,6 +120,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/occupancy": {
+            "post": {
+                "description": "Get the number of total, occupied, and available rooms in a given date range",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Statistics"
+                ],
+                "summary": "Get hotel occupancy information",
+                "parameters": [
+                    {
+                        "description": "Date range for occupancy check",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.OccupancyInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/profile": {
             "get": {
                 "description": "Get the profile information of the currently logged-in user",
@@ -1046,6 +1095,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "controllers.OccupancyInput": {
+            "type": "object",
+            "properties": {
+                "end_date": {
+                    "type": "string"
+                },
+                "start_date": {
+                    "type": "string"
+                }
+            }
+        },
         "gorm.DeletedAt": {
             "type": "object",
             "properties": {

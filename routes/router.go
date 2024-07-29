@@ -36,6 +36,8 @@ func InitRouter() *mux.Router {
 	r.Handle("/reservations/{reservation_id}", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.GetReservationDetails)))).Methods("GET")
 	r.Handle("/reservations/status/{reservation_id}", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.UpdateReservationStatus)))).Methods("PUT")
 
+	r.Handle("/occupancy", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.Occupancy)))).Methods("POST")
+
 	// Swagger endpoint
 	r.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
 		httpSwagger.URL("http://localhost:8080/docs/swagger.json"), // The url pointing to API definition

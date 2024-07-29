@@ -1,5 +1,12 @@
 basePath: /
 definitions:
+  controllers.OccupancyInput:
+    properties:
+      end_date:
+        type: string
+      start_date:
+        type: string
+    type: object
   gorm.DeletedAt:
     properties:
       time:
@@ -148,6 +155,39 @@ paths:
       summary: Login a user
       tags:
       - User
+  /occupancy:
+    post:
+      consumes:
+      - application/json
+      description: Get the number of total, occupied, and available rooms in a given
+        date range
+      parameters:
+      - description: Date range for occupancy check
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.OccupancyInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get hotel occupancy information
+      tags:
+      - Statistics
   /profile:
     get:
       description: Get the profile information of the currently logged-in user
