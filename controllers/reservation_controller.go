@@ -73,7 +73,7 @@ func CreateReservation(w http.ResponseWriter, r *http.Request) {
 		RoomID:    room.ID,
 		StartDate: startDate,
 		EndDate:   endDate,
-		Status:    "confirmed",
+		Status:    "pending",
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}

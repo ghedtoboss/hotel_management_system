@@ -37,6 +37,9 @@ func InitRouter() *mux.Router {
 	r.Handle("/reservations/status/{reservation_id}", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.UpdateReservationStatus)))).Methods("PUT")
 
 	r.Handle("/occupancy", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.Occupancy)))).Methods("POST")
+	r.Handle("/revenue", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.GetTotalRevenue)))).Methods("POST")
+	r.Handle("/revenue/daily", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.GetDailyRevenue)))).Methods("POST")
+	r.Handle("/revenue/monthly", middleware.JWTAuth(middleware.Authorize("admin", "receptionist")(http.HandlerFunc(controllers.GetMonthlyRevenue)))).Methods("POST")
 
 	// Swagger endpoint
 	r.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
