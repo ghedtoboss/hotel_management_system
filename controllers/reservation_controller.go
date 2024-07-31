@@ -2,8 +2,11 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"hotel_management_system/database"
 	"hotel_management_system/models"
+	service "hotel_management_system/services"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -90,6 +93,19 @@ func CreateReservation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to create reservation.", http.StatusInternalServerError)
 		return
 	}
+
+	var user models.User
+	if result := database.DB.First(&user, reservation.UserID); result.Error != nil {
+		http.Error(w, "User not found.", http.StatusNotFound)
+		return
+	}
+
+	go func() {
+		err := service.SendEmail(user.Email, "Reservation Confirmation", "Your reservation has been pending.")
+		if err != nil {
+			log.Printf("Failed to send email: %v", err)
+		}
+	}()
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(reservation)
@@ -277,6 +293,20 @@ func UpdateReservationStatus(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to update reservation", http.StatusInternalServerError)
 		return
 	}
+
+	var user models.User
+	if result := database.DB.First(&user, reservation.UserID); result.Error != nil {
+		http.Error(w, "User not found.", http.StatusNotFound)
+		return
+	}
+
+	go func() {
+		message := fmt.Sprintf("Your reservation status: %s", reservation.Status)
+		err := service.SendEmail(user.Email, "Reservation status has been updated.", message)
+		if err != nil {
+			log.Printf("Failed to send email: %v", err)
+		}
+	}()
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(reservation)

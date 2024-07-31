@@ -173,39 +173,38 @@ func GetDailyRevenue(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {string} string "Internal server error"
 // @Router /revenue/monthly [post]
 func GetMonthlyRevenue(w http.ResponseWriter, r *http.Request) {
-    type RevenueInput struct {
-        StartDate time.Time `json:"start_date"`
-        EndDate   time.Time `json:"end_date"`
-    }
+	type RevenueInput struct {
+		StartDate time.Time `json:"start_date"`
+		EndDate   time.Time `json:"end_date"`
+	}
 
-    var input RevenueInput
-    err := json.NewDecoder(r.Body).Decode(&input)
-    if err != nil {
-        http.Error(w, "Invalid input.", http.StatusBadRequest)
-        return
-    }
+	var input RevenueInput
+	err := json.NewDecoder(r.Body).Decode(&input)
+	if err != nil {
+		http.Error(w, "Invalid input.", http.StatusBadRequest)
+		return
+	}
 
-    var monthlyRevenues []struct {
-        Month   string
-        Revenue float64
-    }
+	var monthlyRevenues []struct {
+		Month   string
+		Revenue float64
+	}
 
-    if result := database.DB.Model(&models.Reservation{}).
-        Select("DATE_FORMAT(start_date, '%Y-%m') as month, SUM(rooms.price) as revenue").
-        Joins("left join rooms on reservations.room_id = rooms.id").
-        Where("reservations.start_date >= ? AND reservations.end_date <= ? AND reservations.status IN ?", input.StartDate, input.EndDate, []string{"confirmed", "checked-in", "checked-out"}).
-        Group("month").
-        Scan(&monthlyRevenues); result.Error != nil {
-        http.Error(w, "Failed to calculate monthly revenues.", http.StatusInternalServerError)
-        return
-    }
+	if result := database.DB.Model(&models.Reservation{}).
+		Select("DATE_FORMAT(start_date, '%Y-%m') as month, SUM(rooms.price) as revenue").
+		Joins("left join rooms on reservations.room_id = rooms.id").
+		Where("reservations.start_date >= ? AND reservations.end_date <= ? AND reservations.status IN ?", input.StartDate, input.EndDate, []string{"confirmed", "checked-in", "checked-out"}).
+		Group("month").
+		Scan(&monthlyRevenues); result.Error != nil {
+		http.Error(w, "Failed to calculate monthly revenues.", http.StatusInternalServerError)
+		return
+	}
 
-    result := make(map[string]float64)
-    for _, monthlyRevenue := range monthlyRevenues {
-        result[monthlyRevenue.Month] = monthlyRevenue.Revenue
-    }
+	result := make(map[string]float64)
+	for _, monthlyRevenue := range monthlyRevenues {
+		result[monthlyRevenue.Month] = monthlyRevenue.Revenue
+	}
 
-    w.WriteHeader(http.StatusOK)
-    json.NewEncoder(w).Encode(result)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(result)
 }
-
