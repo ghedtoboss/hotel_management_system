@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	"gorm.io/gorm"
+	"github.com/dgrijalva/jwt-go"
 )
 
 type User struct {
@@ -14,5 +14,11 @@ type User struct {
 	Role      string `gorm:"not null"` //"admin", "receptionist", "customer"
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm"index"`
+}
+
+type Claims struct {
+	Username string `json:"username"`
+	UserID   uint   `json:"user_id"`
+	Role     string `json:"role"`
+	jwt.StandardClaims
 }

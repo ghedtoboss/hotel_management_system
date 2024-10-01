@@ -2,7 +2,7 @@ module hotel_management_system
 
 go 1.21.6
 
-require gorm.io/gorm v1.25.11
+require gorm.io/gorm v1.25.12
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
@@ -56,6 +56,6 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/swaggo/http-swagger v1.3.4
 	golang.org/x/crypto v0.25.0
-	golang.org/x/text v0.16.0 // indirect
+	golang.org/x/text v0.18.0 // indirect
 	gorm.io/driver/mysql v1.5.7
 )

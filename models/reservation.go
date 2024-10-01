@@ -2,18 +2,15 @@ package models
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type Reservation struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
-	UserID    uint           `json:"user_id"`
-	RoomID    uint           `json:"room_id"`
-	StartDate time.Time      `json:"start_date"`
-	EndDate   time.Time      `json:"end_date"`
-	Status    string         `json:"status"` //pending, confirmed, checked-in, checked-out, cancelled, no-show
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+	ID        uint `gorm:"primaryKey" json:"id"`
+	UserID    uint `gorm:"int" json:"user_id"`
+	RoomID    uint `gorm:"int" json:"room_id"`
+	StartDate time.Time
+	EndDate   time.Time
+	Status    string `gorm:"string" json:"status"` //pending, confirmed, checked-in, checked-out, cancelled, no-show
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }

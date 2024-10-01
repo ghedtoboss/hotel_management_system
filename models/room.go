@@ -2,8 +2,6 @@ package models
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type Room struct {
@@ -14,5 +12,4 @@ type Room struct {
 	Price     float64 `gorm:"not null"`
 	CreatedAt time.Time
 	UpdateAt  time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
